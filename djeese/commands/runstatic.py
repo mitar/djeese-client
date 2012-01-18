@@ -158,6 +158,8 @@ class Command(BaseCommand):
             raise CommandError("You must provide the url to your website file as first argument")
         if not os.path.exists(staticfolder):
             raise CommandError("Static folder %r not found." % staticfolder)
+        if not url.startswith(('http://', 'https://')):
+            url = 'http://%s' % url
         server_address = ('', int(options['port']))
         printer = Printer(int(options['verbosity']))
         print "Open http://localhost:%s in your browser" % options['port']
