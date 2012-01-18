@@ -23,3 +23,6 @@ The following rules apply to all applications on djeese:
   website it is used on to third parties or yourself. This includes, but is not
   limited to, applications that provide APIs to access content on the website
   or send content on the website in some form to other services.
+* You **may not** publish and/or use an application that circumvents the access
+  restrictions on djeese sites, including but not limited to the access 
+  restrictions to the sandbox sites.

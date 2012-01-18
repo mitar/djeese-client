@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
+from djeese import errorcodes
 from djeese.commands import BaseCommand, CommandError, LOGIN_PATH
 from djeese.input_helpers import ask_boolean
 from djeese.printer import Printer
@@ -47,6 +48,18 @@ class Command(BaseCommand):
             printer.error("Unexpected response: %s" % response.status_code)
             printer.log_only(response.content)
             printer.always("Clone failed, check djeese.log for more details")
+            
+    
+    def handle_bad_request(self, response, printer):
+        code = int(response.headers.get('X-DJEESE-ERROR-CODE', 0))
+        meta = response.headers.get('X-DJEESE-ERROR-META', '')
+        if code == errorcodes.INVALID_WEBSITE:
+            printer.error("Website with name %r not found" % meta)
+        elif code == errorcodes.NO_WEBSITE:
+            printer.error("You must supply a website name")
+        else:
+            printer.error("Unexpected error code: %s (%s)" % (code, meta))
+        printer.log_only(response.content)
     
     def finish_clone(self, response, outputdir, printer):
         try:
