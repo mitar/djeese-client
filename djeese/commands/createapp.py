@@ -2,8 +2,8 @@ from __future__ import with_statement
 from collections import defaultdict
 from djeese.apps import AppConfiguration, VALID_TYPES
 from djeese.commands import BaseCommand
-from djeese.input_helpers import (RegexValidator, ask, SlugValidator, 
-    ask_boolean, ask_multi, URLValidator, ask_choice, PathValidator)
+from djeese.input_helpers import (ask, SlugValidator, ask_boolean, ask_multi, 
+    URLValidator, ask_choice, PathValidator, contrib, letterfirst)
 from djeese.utils import slugify, get_package_data
 import os
 
@@ -14,17 +14,6 @@ LICENSE_FILE_CANDIDATES = [
     'LICENSE.txt',
     'LICENSE.TXT',
 ]
-
-def contrib(config, section, key, method, *args, **kwargs):
-    """
-    Wrapper to ask the user for input using `method` (passing `args` and
-    `kwargs` to that method) and if a value is returned, set it in the `config`
-    under `section` and `key`.
-    """
-    value = method(*args, **kwargs)
-    if value:
-        config[section][key] = value
-    return value
 
 def guess_path(name, modules):
     for module in modules:
@@ -45,7 +34,6 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         config = AppConfiguration(1)
-        letterfirst = RegexValidator(r'^[a-zA-Z]', "Must start with a letter")
         name = contrib(config, 'app', 'name', ask, "Name", letterfirst)
         packagename = contrib(config, 'app', 'packagename', ask, 'Package name on PyPI', SlugValidator(), default=slugify(name))
         check_net = ask_boolean("Should we try to get additional information from djangopackages?", default=True)

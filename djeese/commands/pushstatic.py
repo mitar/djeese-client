@@ -4,38 +4,15 @@ from djeese import errorcodes
 from djeese.commands import BaseCommand, CommandError, LOGIN_PATH
 from djeese.input_helpers import ask_boolean
 from djeese.printer import Printer
+from djeese.utils import is_valid_file_name
 from optparse import make_option
 import os
-import re
 import requests
 import tarfile
 try:
     from tarfile import bltn_open
 except ImportError: # 2.5 compatiblity
     bltn_open = file 
-
-FILENAME_BASIC_RE = re.compile(r'^[a-zA-Z]+[a-zA-Z0-9._-]*\.[a-zA-Z]{2,4}$')
-ALLOWED_EXTENSIONS = [
-    '.js',
-    '.css',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.htc',
-]
-
-
-def is_valid_file_name(name, printer):
-    if not FILENAME_BASIC_RE.match(name):
-        printer.always("File name %r is not a valid file name, ignoring..." % name)
-        return False
-    ext = os.path.splitext(name)[-1]
-    if ext not in ALLOWED_EXTENSIONS:
-        printer.always("File extension %r is not allowed, ignoring" % ext)
-        return False
-    return True
-
 
 
 class TarfileBackport(tarfile.TarFile):

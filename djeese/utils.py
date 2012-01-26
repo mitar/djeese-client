@@ -128,7 +128,7 @@ def get_package_data(slug):
     data.update(get_djangopackages_data(slug))
     return data
 
-def _bundle(workspace, setuppy, config):
+def _bundle_app(workspace, setuppy, config):
     """
     Does the actual bundling for `bundle`.
     """
@@ -169,6 +169,25 @@ def _bundle(workspace, setuppy, config):
     bundle.seek(0)
     return bundle
 
+def filter_static_files(tarinfo):
+    if not tarinfo.isfile():
+        return tarinfo
+    basename = os.path.basename(tarinfo.name)
+    if is_valid_file_name(basename):
+        return tarinfo
+    else:
+        return None
+
+def filter_template_files(tarinfo):
+    if not tarinfo.isfile():
+        return tarinfo
+    basename = os.path.basename(tarinfo.name)
+    ext = os.path.splitext(basename)[1]
+    if ext == '.html':
+        return tarinfo
+    else:
+        return None
+
 def bundle_app(setuppy, config):
     """
     Bundles a setup.py and all other files required (templates/license) into
@@ -176,6 +195,59 @@ def bundle_app(setuppy, config):
     """
     distdir = tempfile.mkdtemp(prefix='djeese')
     try:
-        return _bundle(distdir, setuppy, config)
+        return _bundle_app(distdir, setuppy, config)
     finally:
         shutil.rmtree(distdir)
+        
+def _bundle_boilerplate(workspace, config):
+    bundle = StringIO()
+    tarball = tarfile.open(fileobj=bundle, mode='w:gz')
+    # add templates
+    tarball.add('templates', filter=filter_template_files)
+    # add staticfiles
+    tarball.add('static', filter=filter_static_files)
+    # add license
+    tarball.add(config['boilerplate']['license-path'], arcname='meta/LICENSE.txt')
+    # add the config
+    configpath = os.path.join(workspace, 'config')
+    with open(configpath, 'w') as fobj:
+        config.write_file(fobj)
+    tarball.add(configpath, 'meta/config.cfg')
+    # close, seek, return
+    tarball.close()
+    bundle.seek(0)
+    return bundle
+
+def bundle_boilerplate(config):
+    workspace = tempfile.mkdtemp(prefix='djeese')
+    try:
+        return _bundle_boilerplate(workspace, config)
+    finally:
+        shutil.rmtree(workspace)
+
+
+FILENAME_BASIC_RE = re.compile(r'^[a-zA-Z_]+[a-zA-Z0-9._-]*\.[a-zA-Z]{2,4}$')
+ALLOWED_EXTENSIONS = [
+    '.js',
+    '.css',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.htc',
+    '.scss',
+    '.sass',
+    '.rb',
+    '.less',
+]
+
+def is_valid_file_name(name, printer=None):
+    always_print = printer.always if printer else lambda x: None
+    if not FILENAME_BASIC_RE.match(name):
+        always_print("File name %r is not a valid file name, ignoring..." % name)
+        return False
+    ext = os.path.splitext(name)[-1]
+    if ext not in ALLOWED_EXTENSIONS:
+        always_print("File extension %r is not allowed, ignoring" % ext)
+        return False
+    return True

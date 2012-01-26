@@ -5,6 +5,17 @@ import os
 import re
 import requests
 
+def contrib(config, section, key, method, *args, **kwargs):
+    """
+    Wrapper to ask the user for input using `method` (passing `args` and
+    `kwargs` to that method) and if a value is returned, set it in the `config`
+    under `section` and `key`.
+    """
+    value = method(*args, **kwargs)
+    if value:
+        config[section][key] = value
+    return value
+
 class BaseValidator(object):
     """
     Base validator object.
@@ -25,8 +36,11 @@ class BaseValidator(object):
 class PathValidator(BaseValidator):
     message = "File not found: %r"
     
+    def __init__(self, base='.'):
+        self.base = base
+    
     def check(self, value):
-        return os.path.exists(value)
+        return os.path.exists(os.path.join(self.base, value))
 
 
 class URLValidator(BaseValidator):
@@ -80,7 +94,9 @@ def ask(title, *validators, **kwargs):
         return None
     for validator in validators:
         if not validator.validate(value):
-            return ask(title, *validators)
+            return ask(title, *validators, **kwargs)
+    if not value and required:
+        return ask(title, *validators, **kwargs)
     return value
 
 def ask_boolean(title, default=None):
@@ -139,3 +155,5 @@ def ask_password(title):
     while not password:
         password = ask_password(title)
     return password
+
+letterfirst = RegexValidator(r'^[a-zA-Z]', "Must start with a letter")
