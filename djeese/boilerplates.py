@@ -9,7 +9,7 @@ EXTRA_BOILERPLATE_KEYS = ['settings']
 REQUIRED_SETTINGS_KEYS = ['name', 'verbose-name', 'type']
 EXTRA_SETTINGS_KEYS = ['default']
 
-VALID_TYPES = ['string', 'stringtuplelist', 'stringlist', 'boolean', 'integer']
+VALID_TYPES = ['string', 'stringtuplelist', 'stringlist', 'boolean', 'integer', 'choices']
 
 def validate_boilerplate(config, printer, validate_templates=True):
     valid = True
@@ -71,7 +71,14 @@ def validate_settings_section(config, printer, setting):
         if typevalue not in VALID_TYPES:
             valid_types = ', '.join(VALID_TYPES)
             printer.error("Setting %r type %r is not valid. Valid choices: %s" % (setting, typevalue, valid_types))
-    printer.info("Settings section valid")
+            valid = False
+        if typevalue == 'choices':
+            choices = setting_config['choices']
+            if choices not in config:
+                printer.error("Choices section %r not found." % (choices))
+                valid = False
+    if valid:
+        printer.info("Settings section valid")
     return valid
 
 
