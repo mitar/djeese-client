@@ -55,7 +55,7 @@ Following options are available to all subcommands:
 ``djeese createapp``
 ====================
 
-    Starts an interactive session to create Djeese Application Configuration
+    Starts an interactive session to create a Djeese Application Configuration
     file as described in :doc:`app-configuration`. This command requires
     internet access.
 
@@ -73,12 +73,34 @@ Builds and uploads an application to djeese. The ``<setup.py>`` is the file to
 install your application. ``<filepath>`` is the path to your Djeese Application
 Configuration file.
 
+
+``djeese createboilerplate``
+============================
+
+    Starts an interactive session to create a Djeese Boilerplate Configuration
+    file.
+
+
+``djeese checkboilerplate <filename>``
+======================================
+
+Validates the Djeese Boilerplate Configuration in ``<filepath>``.
+
+
+``djeese uploadboilerplate <filename>``
+=======================================
+
+Builds and uploads an boilerplate to djeese. ``<filepath>`` is the path to your
+Djeese Boilerplate Configuration file.
+
+
 ``djeese clonestatic <websitename> <outputdir>``
 ================================================
 
 Clones the static files of the website with the name ``<websitename>`` to
 ``<outputdir>``. ``<outputdir>>`` defaults to ``'static/'``. All files in
 ``<outputdir>`` will be overwritten.
+
 
 ``djeese runstatic <url> <sourcedir> --port=8080``
 ================================================
@@ -88,6 +110,7 @@ other content from ``<url>``. ``<sourcedir>`` defaults to ``'static/'``. You
 may optionally provide the ``--port`` argument which defaults to ``8080``. This
 command is useful for debugging your CSS. You may access the page from your
 browser at ``http://localhost:<port>``.
+
 
 ``djeese pushstatic <websitename> <sourcedir>``
 ===============================================
