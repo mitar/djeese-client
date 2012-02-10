@@ -11,6 +11,7 @@ Welcome to Djeese's documentation!
     
     app-quickstart
     app-guidelines
+    app-environment
     app-configuration
     command-line-client
     support

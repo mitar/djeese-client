@@ -84,8 +84,8 @@ must create a section with the same name. This section has following
 * ``verbose-name``: The verbose name of this setting as used on the djeese site
                     when the user is prompted to configure this setting.
 * ``type``: The type of this setting. Available values are: :term:`string`,
-            :term:`stringlist`, :term:`stringtuplelist` and
-            :term:`boolean`. 
+            :term:`stringlist`, :term:`stringtuplelist`, :`boolean`,
+            :term:`staticfile` and :term:`choices`. 
 
 It may also include the following **optional** options:
 
@@ -96,6 +96,19 @@ It may also include the following **optional** options:
 * ``editable``: If set to ``false`` makes this setting non-editable. This
                 requires the setting to have a ``default`` set. This option
                 should be avoided if possible. 
+
+The :term:`staticfile` type also has following **optional** option:
+
+* ``file-extension``: Allowed file extension, for example ``png``. If omitted,
+                      any file type that can be uploaded using pushstatic can
+                      be used.
+
+The :term:`choices` type also has following **required** option:
+
+* ``choices``: The name of the configuration section that holds the choices.
+               That section must exist. The sections keys are the values to be
+               saved to the setting, the sections values are the labels to
+               display in the forms.
 
 .. _setting-types:
 
@@ -115,6 +128,13 @@ Setting types
 
     boolean
         A boolean flag (``True`` or ``False``).
+        
+    staticfile
+        A (single) file selected from the files that are uploaded with
+        pushstatic.
+    
+    choices
+        Gives the user a list of choices to choose from.
 
 
 An Example

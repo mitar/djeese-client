@@ -24,12 +24,13 @@ class Command(BaseCommand):
         if not website:
             raise CommandError("You must provide the name of the website from which you want to clone the static files as first argument")
         url = self.get_absolute_url('/api/v1/io/static/clone/')
-        username, password = self.get_auth(options['noinput'])
+        username, password = self.get_auth(options['noinput']) 
         session = requests.session()
         login_url = self.get_absolute_url(LOGIN_PATH)
         response = session.post(login_url, {'username': username, 'password': password})
         if response.status_code != 204:
             printer.error("Login failed")
+            self.clear_auth()
             return
         data = {'name': website}
         response = session.get(url, params=data)

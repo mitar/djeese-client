@@ -103,7 +103,7 @@ Clones the static files of the website with the name ``<websitename>`` to
 
 
 ``djeese runstatic <url> <sourcedir> --port=8080``
-================================================
+==================================================
 
 Runs a server that serves the static files locally from ``<sourcedir>`` and all
 other content from ``<url>``. ``<sourcedir>`` defaults to ``'static/'``. You

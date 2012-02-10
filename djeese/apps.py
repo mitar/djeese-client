@@ -5,7 +5,8 @@ from djeese.utils import check_urls
 import os
 
 
-VALID_TYPES = ['string', 'stringtuplelist', 'stringlist', 'boolean', 'integer']
+VALID_TYPES = ['string', 'stringtuplelist', 'stringlist', 'boolean', 'integer',
+               'staticfile', 'choice']
 REQUIRED_APP_KEYS = ['name', 'packagename', 'installed-apps', 'description',
                      'license', 'url', 'version', 'private']
 DEPRECATION_APP_KEYS = {

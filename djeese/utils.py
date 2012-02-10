@@ -239,6 +239,7 @@ ALLOWED_EXTENSIONS = [
     '.sass',
     '.rb',
     '.less',
+    '.ico',
 ]
 
 def is_valid_file_name(name, printer=None):

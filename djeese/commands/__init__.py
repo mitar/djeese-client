@@ -62,6 +62,10 @@ class BaseCommand(object):
                     fobj.close()
         return username, password
     
+    def clear_auth(self):
+        if os.path.exists(AUTH_FILE):
+            os.remove(AUTH_FILE)
+    
     def usage(self, subcommand):
         """
         Return a brief description of how to use this command, by

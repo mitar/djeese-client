@@ -50,6 +50,7 @@ class Command(BaseCommand):
         elif response.status_code == 403:
             printer.error("Authentication failed")
             printer.always("Upload failed")
+            self.clear_auth()
         elif response.status_code == 502:
             printer.error("Temporarily unavailable")
             printer.always("Upload failed")

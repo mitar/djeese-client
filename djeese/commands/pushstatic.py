@@ -102,12 +102,13 @@ class Command(BaseCommand):
         response = session.post(login_url, {'username': username, 'password': password})
         if response.status_code != 204:
             printer.error("Login failed")
+            self.clear_auth()
             return
         data = {'name': website}
         files = {'static': self.build_tarball(sourcedir, printer)}
         response = session.post(url, data=data, files=files)
         if response.status_code == 204:
-            printer.always("Sucess")
+            printer.always("Success")
         elif response.status_code == 400:
             self.handle_bad_request(response, printer)
             printer.always("Push failed: Bad request")
@@ -140,6 +141,8 @@ class Command(BaseCommand):
             printer.error("Access denied")
         elif code == errorcodes.INVALID_FILENAME:
             printer.error("Filename %r is not allowed" % meta)
+        elif code == errorcodes.MISSING_STATIC:
+            printer.error("No staticfiles found, try to update the djeese client.")
         else:
             printer.error("Unexpected error code: %s (%s)" % (code, meta))
         printer.info(response.content)

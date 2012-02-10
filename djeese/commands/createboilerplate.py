@@ -18,13 +18,6 @@ class Command(BaseCommand):
         contrib(config, 'boilerplate', 'description', ask, 'Description (short)')
         contrib(config, 'boilerplate', 'license', ask, 'License')
         contrib(config, 'boilerplate', 'license-path', ask, 'Path to license file', PathValidator(), default=guess_license_path())
-        contrib(config, 'boilerplate', 'settings', ask_multi, 'Settings (optional)')
-        for setting in config['boilerplate'].getlist('settings'):
-            contrib(config, setting, 'name', ask, 'Name of the setting %r' % setting, RegexValidator(r'[a-zA-Z_]+', "Can only contain letters and underscores"))
-            contrib(config, setting, 'verbose-name', ask, 'Verbose name of the setting %r' % setting)
-            contrib(config, setting, 'type', ask_choice, 'Type of the setting %r' % setting, choices=VALID_TYPES)
-            default = contrib(config, setting, 'default', ask, 'Default value for setting %r (optional)' % setting, required=False)
-            config[setting]['required'] = str(not default).lower()
         print "Configuring CMS templates. Only list templates that should be selectable in the CMS"
         while True:
             name = ask('Verbose template name')
