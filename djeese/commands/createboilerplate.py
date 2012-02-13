@@ -1,9 +1,8 @@
 from __future__ import with_statement
-from djeese.boilerplates import BoilerplateConfiguration, VALID_TYPES
+from djeese.boilerplates import BoilerplateConfiguration
 from djeese.commands import BaseCommand
 from djeese.commands.createapp import guess_license_path
-from djeese.input_helpers import (contrib, ask, letterfirst, PathValidator, 
-    ask_multi, RegexValidator, ask_choice, ask_boolean)
+from djeese.input_helpers import (contrib, ask, letterfirst, PathValidator, ask_boolean)
 
 class Command(BaseCommand):
     help = 'Create a djeese boilerplate'
