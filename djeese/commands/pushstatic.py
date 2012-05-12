@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from StringIO import StringIO
 from djeese import errorcodes
-from djeese.commands import BaseCommand, CommandError, LOGIN_PATH
+from djeese.commands import BaseCommand, CommandError
 from djeese.input_helpers import ask_boolean
 from djeese.printer import Printer
 from djeese.utils import is_valid_file_name
 from optparse import make_option
 import os
-import requests
 import tarfile
 try:
     from tarfile import bltn_open
@@ -96,13 +95,8 @@ class Command(BaseCommand):
         if not os.path.exists(sourcedir):
             raise CommandError("Source directory %r not found" % sourcedir)
         url = self.get_absolute_url('/api/v1/io/static/push/')
-        username, password = self.get_auth(options['noinput'])
-        session = requests.session()
-        login_url = self.get_absolute_url(LOGIN_PATH)
-        response = session.post(login_url, {'username': username, 'password': password})
-        if response.status_code != 204:
-            printer.error("Login failed")
-            self.clear_auth()
+        session = self.login(printer, options['noinput'])
+        if not session:
             return
         data = {'name': website}
         files = {'static': self.build_tarball(sourcedir, printer)}

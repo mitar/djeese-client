@@ -2,12 +2,11 @@
 from __future__ import with_statement
 from djeese import errorcodes
 from djeese.boilerplates import BoilerplateConfiguration
-from djeese.commands import BaseCommand, CommandError, LOGIN_PATH
+from djeese.commands import BaseCommand, CommandError
 from djeese.printer import Printer
 from djeese.utils import bundle_boilerplate
 from optparse import make_option
 import os
-import requests
 
 
 UPLOAD_PATH = '/api/v1/boilerplates/upload-bundle/'
@@ -26,16 +25,19 @@ class Command(BaseCommand):
             raise CommandError("You must provide the path to your boilerplatefile file as first argument")
         if not os.path.exists(boilerplatefile):
             raise CommandError("Could not find boilerplatefile at %r" % boilerplatefile)
-        username, password = self.get_auth(options['noinput'])
-        self.run(boilerplatefile, username, password, **options)
+        printer = Printer(int(options['verbosity']), logfile='djeese.log')
+        session = self.login(printer, options['noinput'])
+        if not session:
+            return
+        self.run(boilerplatefile, session, printer, **options)
 
-    def run(self, boilerplatefile, username, password, **options):
+    def run(self, boilerplatefile, session, printer, **options):
         printer = Printer(int(options['verbosity']), logfile='djeese.log')
         config = BoilerplateConfiguration(printer=printer)
         config.read(boilerplatefile)
         bundle = bundle_boilerplate(config) 
         boilerplatename = config['boilerplate']['name']
-        response = self.upload(boilerplatename, bundle, username, password)
+        response = self.upload(boilerplatename, bundle, session, printer)
         if response.status_code == 201:
             printer.always("Upload successful (created)")
         elif response.status_code == 204:
@@ -90,18 +92,13 @@ class Command(BaseCommand):
             printer.error("Unexpected error code: %s (%s)" % (code, meta))
         printer.info(response.content)
 
-    def upload(self, boilerplatename, bundle, username, password):
+    def upload(self, boilerplatename, bundle, session, printer):
         files = {
             'bundle': bundle,
         }
         data = {
             'boilerplate': boilerplatename,
         }
-        session = requests.session()
-        login_url = self.get_absolute_url(LOGIN_PATH)
-        response = session.post(login_url, {'username': username, 'password': password})
-        if response.status_code != 204:
-            return response
         target_url = self.get_absolute_url(UPLOAD_PATH)
         response = session.post(target_url, data=data, files=files)
         return response

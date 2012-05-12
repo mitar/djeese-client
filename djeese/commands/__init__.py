@@ -4,6 +4,7 @@ from optparse import make_option, OptionParser
 import djeese
 import os
 import re
+import requests
 import sys
 import urlparse
 
@@ -42,7 +43,7 @@ class BaseCommand(object):
         return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
     
     def get_auth(self, noinput=False):
-        username, password = None, None
+        email, password = None, None
         if os.path.exists(AUTH_FILE):
             fobj = open(AUTH_FILE)
             try:
@@ -50,21 +51,36 @@ class BaseCommand(object):
             finally:
                 fobj.close()
             if data.count(':') == 1:
-                username, password = [bit.strip() for bit in data.split(':')]
-        if not (username and password):
-            username = ask("Username")
+                email, password = [bit.strip() for bit in data.split(':')]
+        if not (email and password):
+            email = ask("E-Mail")
             password = ask_password("Password:")
             if noinput or ask_boolean("Save login data?", default=True) == 'true':
                 fobj = open(AUTH_FILE, 'w')
                 try:
-                    data = fobj.write(u'%s:%s' % (username, password))
+                    data = fobj.write(u'%s:%s' % (email, password))
                 finally:
                     fobj.close()
-        return username, password
+        return email, password
     
     def clear_auth(self):
         if os.path.exists(AUTH_FILE):
             os.remove(AUTH_FILE)
+            
+    def login(self, printer, noinput, retry=True):
+        email, password = self.get_auth(noinput) 
+        session = requests.session()
+        login_url = self.get_absolute_url(LOGIN_PATH)
+        response = session.post(login_url, {'email': email, 'password': password})
+        if response.status_code != 204:
+            printer.error("Login failed")
+            self.clear_auth()
+            if retry:
+                return self.login(printer, noinput, False)
+            else:
+                return None
+        else:
+            return session
     
     def usage(self, subcommand):
         """

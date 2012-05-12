@@ -2,12 +2,11 @@
 from __future__ import with_statement
 from djeese import errorcodes
 from djeese.apps import AppConfiguration
-from djeese.commands import BaseCommand, CommandError, LOGIN_PATH
+from djeese.commands import BaseCommand, CommandError
 from djeese.printer import Printer
 from djeese.utils import bundle_app
 from optparse import make_option
 import os
-import requests
 
 
 UPLOAD_PATH = '/api/v1/apps/upload-bundle/'
@@ -30,16 +29,18 @@ class Command(BaseCommand):
             raise CommandError("Could not find setup.py at %r" % setupfile)
         if not os.path.exists(appfile):
             raise CommandError("Could not find app file at %r" % appfile)
-        username, password = self.get_auth(options['noinput'])
-        self.run(setupfile, appfile, username, password, **options)
-
-    def run(self, setupfile, appfile, username, password, **options):
         printer = Printer(int(options['verbosity']), logfile='djeese.log')
+        session = self.login(printer, options['noinput'])
+        if not session:
+            return
+        self.run(setupfile, appfile, session, printer, **options)
+
+    def run(self, setupfile, appfile, session, printer, **options):
         config = AppConfiguration(printer=printer)
         config.read(appfile)
         bundle = bundle_app(setupfile, config) 
         appname = config['app']['name']
-        response = self.upload(appname, bundle, username, password)
+        response = self.upload(appname, bundle, session)
         if response.status_code == 201:
             printer.always("Upload successful (created)")
         elif response.status_code == 204:
@@ -92,18 +93,13 @@ class Command(BaseCommand):
             printer.error("Unexpected error code: %s (%s)" % (code, meta))
         printer.info(response.content)
 
-    def upload(self, appname, bundle, username, password):
+    def upload(self, appname, bundle, session):
         files = {
             'bundle': bundle,
         }
         data = {
             'app': appname,
         }
-        session = requests.session()
-        login_url = self.get_absolute_url(LOGIN_PATH)
-        response = session.post(login_url, {'username': username, 'password': password})
-        if response.status_code != 204:
-            return response
         target_url = self.get_absolute_url(UPLOAD_PATH)
         response = session.post(target_url, data=data, files=files)
         return response
