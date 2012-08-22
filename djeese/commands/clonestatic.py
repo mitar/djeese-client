@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
+import shutil
+import tempfile
 from djeese import errorcodes
 from djeese.commands import BaseCommand, CommandError
 from djeese.input_helpers import ask_boolean
@@ -7,6 +9,7 @@ from djeese.printer import Printer
 from optparse import make_option
 import tarfile
 import traceback
+import os
 
 class Command(BaseCommand):
     help = 'Clone the static files from an website'
@@ -29,7 +32,11 @@ class Command(BaseCommand):
         data = {'name': website}
         response = session.get(url, params=data)
         if response.status_code == 200:
-            self.finish_clone(response, outputdir, printer)
+            stage = tempfile.mkdtemp()
+            try:
+                self.finish_clone(response, outputdir, stage, printer)
+            finally:
+                shutil.rmtree(stage, ignore_errors=True)
         elif response.status_code == 400:
             self.handle_bad_request(response, printer)
             printer.always("Clone failed: Bad request")
@@ -56,10 +63,13 @@ class Command(BaseCommand):
             printer.error("Unexpected error code: %s (%s)" % (code, meta))
         printer.log_only(response.content)
     
-    def finish_clone(self, response, outputdir, printer):
+    def finish_clone(self, response, outputdir, stage, printer):
+        filename = os.path.join(stage, 'download.tar.gz')
+        with open(filename, 'wb') as fobj:
+            fobj.write(response.content)
         try:
-            tarball = tarfile.open(mode='r|gz', fileobj=response.raw)
-        except:
+            tarball = tarfile.open(filename, mode='r:gz')
+        except Exception:
             printer.error("Response not a valid tar file.")
             printer.always("Clone failed")
             traceback.print_exc(printer.logfile)
