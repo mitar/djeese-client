@@ -5,7 +5,7 @@ from djeese import __version__
 
 
 INSTALL_REQUIRES = [
-    'requests>=0.10',
+    'requests>=0.10,<1.0',
 ]
 try:
     import json
